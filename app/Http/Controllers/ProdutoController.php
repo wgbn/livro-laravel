@@ -8,26 +8,53 @@
 
 namespace Estoque\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use Estoque\Http\Requests\ProdutosRequest;
+use Estoque\Produto;
 use Request;
 
 class ProdutoController extends Controller {
 
-    public function lista(){
-        $produtos = DB::select("select * from produtos");
-
-        return view('listagem')->with("produtos", $produtos);
-
+    public function __construct() {
+        $this->middleware('auth', [
+            'only' => [
+                'novo',
+                'add',
+                'del'
+            ]
+        ]);
     }
 
-    public function mostra(){
-        $id = Request::input('id', 0);
-        $resposta = DB::select('select * from produtos where id = ?', [$id]);
+    public function lista(){
+        $produtos = Produto::all();
+        return view('produto.listagem')->with("produtos", $produtos);
+    }
 
+    public function listaJson(){
+        $produtos = Produto::all();
+        return $produtos;
+    }
+
+    public function mostra($id){
+        $resposta = Produto::find($id);
         if (empty($resposta))
             return "Este produto não existe";
+        return view('produto.detalhes')->with("p", $resposta);
+    }
 
-        return view('detalhes')->with("p", $resposta[0]);
+    public function novo(){
+        return view('produto.formulario');
+    }
+
+    public function add(ProdutosRequest $req){
+        $form = $req->only('nome', 'descricao', 'valor', 'quantidade');
+        Produto::create($form);
+        return redirect('/produtos');
+    }
+
+    public function del($id){
+        $produto = Produto::find($id);
+        $produto->delete();
+        return redirect('/produtos');
     }
 
 }

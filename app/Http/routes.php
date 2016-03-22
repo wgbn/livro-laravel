@@ -11,9 +11,24 @@
 |
 */
 
-Route::get("/", function(){
-    return "<pre>".print_r($_GET, true)."</pre>";
-});
+Route::group(['middleware' => 'web'], function() {
 
-Route::get("/produtos", "ProdutoController@lista");
-Route::get("/produtos/mostra", "ProdutoController@mostra");
+    Route::get("/", "ProdutoController@lista");
+    Route::get("/produtos", "ProdutoController@lista");
+    Route::get("/produtos/json", "ProdutoController@listaJson");
+    Route::get("/produtos/mostra/{id}", "ProdutoController@mostra")->where('id', '[0-9]+');
+    Route::get("/produtos/novo", "ProdutoController@novo");
+    Route::post("/produtos/add", "ProdutoController@add");
+    Route::get("/produtos/del/{id}", "ProdutoController@del");
+
+    /*Route::controllers([
+        'auth' => 'LoginController',
+        'password' => 'Auth\PasswordController',
+    ]);*/
+
+    Route::get('/login', 'LoginController@index');
+    Route::post('/login', 'LoginController@login');
+    Route::get('/logout', 'LoginController@logout');
+    Route::get('/entrar', 'LoginController@index');
+
+});
